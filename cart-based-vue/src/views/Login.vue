@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import {mapActions} from 'vuex'
 export default {
   data() {
     return {
@@ -41,6 +42,7 @@ export default {
             modelKey: "pwd",
             label: "密码",
             props: {
+			  type: "password",
               placeholder: "请输入密码",
               eye: {
                 open: true
@@ -60,11 +62,27 @@ export default {
     };
   },
   methods: {
+	  ...mapActions(['login']),
+
 	  handleLogin(e){
 		  // 阻止表单默认提交行为
 		  e.preventDefault();
-		  // 请求登录
-		  
+		  //   请求登录
+          this.login(this.model).then(code => {
+			if(code === 1){
+				// 登录成功, 控制跳转
+				const redirect_path = this.$route.query.redirect || '/';
+				this.$router.push({path: redirect_path});
+			}
+		  }) .catch(error => {
+			// 有错误发生或者登录失败
+			const toast = this.$createToast({
+				time: 2000,
+				txt: error.message || error.response.data.message || "登录失败",
+				type: "error"
+			});
+			toast.show();
+		  });  
 	  },
 
 	  handleValidate(ret){
